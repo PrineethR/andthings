@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&amp;things — design studio</title>
+<meta name="description" content="&things is a design studio. Everything after the ampersand.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,200;0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────
+   &things — tokens
+   ───────────────────────────────────────────── */
+:root{
+  --paper:#F2F0E7;
+  --paper-2:#E9E6DA;
+  --ink:#14150F;
+  --green:#1E9E48;
+  --hair:rgba(20,21,15,.62);
+  --hair-soft:rgba(20,21,15,.28);
+
+  --display:"Newsreader",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  --micro:clamp(9px,.72vw,10.5px);
+  --track:.18em;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--display);
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--green);color:var(--paper)}
+
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+a{color:inherit}
+:focus-visible{outline:1.5px solid var(--green);outline-offset:4px}
+
+/* ── grain: one static noise layer, no animation ── */
+.grain{
+  position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.42;
+  mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+}
+
+/* ─────────────────────────────────────────────
+   chrome
+   ───────────────────────────────────────────── */
+.chrome{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:clamp(18px,2.4vw,30px) clamp(18px,3.4vw,46px);
+  font-family:var(--mono);font-size:var(--micro);
+  letter-spacing:var(--track);text-transform:uppercase;
+  mix-blend-mode:multiply;
+}
+.chrome__mark{font-family:var(--display);font-size:15px;letter-spacing:0;text-transform:none}
+.chrome__link{text-decoration:none;border-bottom:1px solid var(--hair-soft);padding-bottom:2px}
+.chrome__link:hover{border-bottom-color:var(--green);color:var(--green)}
+
+/* ─────────────────────────────────────────────
+   sequence
+   ───────────────────────────────────────────── */
+.seq{position:relative;height:460vh;height:460svh}
+.seq__inner{
+  height:100vh;height:100svh;width:100%;
+  position:relative;overflow:hidden;
+}
+
+.stage{position:absolute;inset:0}
+
+/* ── overlay marks (dashed arcs + stipple scatter) ── */
+.marks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.marks path{fill:none;stroke:var(--hair-soft);stroke-width:1;vector-effect:non-scaling-stroke}
+
+/* ── figures ── */
+.fig{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  width:var(--w);
+}
+.fig__inner{position:relative;will-change:transform,opacity}
+.fig svg{display:block;width:100%;height:auto;overflow:visible}
+
+.f-hair{fill:none;stroke:var(--ink);stroke-width:1;vector-effect:non-scaling-stroke}
+.f-hair--soft{stroke:var(--hair-soft)}
+.f-ink{fill:var(--ink)}
+.f-green{fill:var(--green)}
+.f-none{fill:none}
+
+/* caption */
+.cap{
+  display:flex;align-items:center;gap:9px;white-space:nowrap;
+  margin-top:14px;
+  font-family:var(--mono);font-size:var(--micro);
+  letter-spacing:var(--track);text-transform:uppercase;
+  color:var(--hair);
+}
+.cap__rule{
+  display:block;width:18px;height:1px;background:currentColor;
+  transform:scaleX(0);transform-origin:left center;
+}
+.cap__num{opacity:.6}
+.cap__name{transition:none}
+
+/* ─────────────────────────────────────────────
+   wordmark
+   ───────────────────────────────────────────── */
+.mark{
+  position:absolute;left:50%;top:47%;
+  transform:translate(-50%,-50%);
+  width:min(92vw,760px);
+  text-align:center;
+  z-index:5;
+}
+.mark__line{
+  margin:0;
+  font-size:clamp(58px,10.4vw,150px);
+  font-weight:200;
+  line-height:.92;
+  letter-spacing:-.018em;
+  white-space:nowrap;
+  display:flex;align-items:baseline;justify-content:center;
+}
+.amp{
+  position:relative;display:inline-block;
+  will-change:transform;
+  transform-origin:50% 50%;
+}
+.amp__glyph{display:block;font-weight:300}
+.amp__out{
+  color:transparent;
+  -webkit-text-stroke:1.1px var(--ink);
+}
+.amp__fill{
+  position:absolute;inset:0;
+  color:var(--green);
+  --flood:100%;
+  -webkit-clip-path:inset(var(--flood) 0 0 0);
+  clip-path:inset(var(--flood) 0 0 0);
+}
+.mark__word{display:inline-block;will-change:transform,opacity}
+
+.mark__sub{
+  margin:clamp(18px,2.2vw,30px) 0 0;
+  font-size:clamp(15px,1.5vw,20px);
+  font-style:italic;font-weight:300;
+  color:var(--ink);
+}
+.mark__meta{
+  margin:clamp(12px,1.4vw,18px) 0 0;
+  font-family:var(--mono);font-size:var(--micro);
+  letter-spacing:.26em;text-transform:uppercase;
+  color:var(--hair);
+}
+.mark__meta em{font-style:normal;color:var(--green)}
+
+/* ── scroll cue ── */
+.cue{
+  position:absolute;left:50%;bottom:clamp(22px,3.4vw,40px);
+  transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:9px;
+  font-family:var(--mono);font-size:var(--micro);
+  letter-spacing:var(--track);text-transform:uppercase;color:var(--hair);
+  z-index:6;
+}
+.cue__rail{width:1px;height:34px;background:var(--hair-soft);position:relative;overflow:hidden}
+.cue__bead{position:absolute;left:0;top:0;width:1px;height:12px;background:var(--green)}
+
+/* ─────────────────────────────────────────────
+   the flood / inversion
+   ───────────────────────────────────────────── */
+.flood{
+  position:absolute;inset:0;background:var(--green);
+  opacity:0;z-index:8;pointer-events:none;will-change:opacity;
+}
+.close{
+  position:absolute;inset:0;z-index:9;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(16px,2vw,26px);
+  padding:0 6vw;text-align:center;
+  color:var(--paper);opacity:0;pointer-events:none;
+}
+.close__line{
+  margin:0;font-size:clamp(30px,5.4vw,74px);font-weight:200;
+  line-height:1.02;letter-spacing:-.02em;
+}
+.close__line em{font-style:italic;font-weight:300}
+.close__meta{
+  margin:0;font-family:var(--mono);font-size:var(--micro);
+  letter-spacing:.26em;text-transform:uppercase;opacity:.72;
+}
+
+/* ─────────────────────────────────────────────
+   tail
+   ───────────────────────────────────────────── */
+.tail{
+  background:var(--green);color:var(--paper);
+  padding:clamp(70px,12vw,150px) clamp(20px,6vw,90px) clamp(34px,5vw,60px);
+}
+/* the closing line lives in the sequence; without motion it lives here */
+.tail__lede{display:none}
+@media(prefers-reduced-motion:reduce){
+  .tail__lede{
+    display:block;max-width:1180px;
+    margin:0 auto clamp(38px,6vw,78px);
+    font-size:clamp(30px,5vw,64px);font-weight:200;
+    line-height:1.02;letter-spacing:-.02em;
+  }
+  .tail__lede em{font-style:italic;font-weight:300}
+}
+.tail__grid{
+  max-width:1180px;margin:0 auto;
+  display:grid;grid-template-columns:1fr;gap:clamp(34px,5vw,64px);
+}
+@media(min-width:820px){.tail__grid{grid-template-columns:1.15fr .85fr;gap:clamp(48px,7vw,110px)}}
+.tail__body{
+  margin:0;font-size:clamp(19px,2.05vw,29px);
+  font-weight:300;line-height:1.36;letter-spacing:-.008em;max-width:24ch;
+}
+.tail__body em{font-style:italic}
+.tail__col{display:flex;flex-direction:column;gap:14px}
+.tail__label{
+  font-family:var(--mono);font-size:var(--micro);
+  letter-spacing:.26em;text-transform:uppercase;opacity:.66;
+}
+.tail__link{
+  font-size:clamp(19px,2vw,26px);text-decoration:none;
+  border-bottom:1px solid rgba(242,240,231,.4);
+  padding-bottom:3px;width:fit-content;
+}
+.tail__link:hover{border-bottom-color:var(--paper)}
+.tail__foot{
+  max-width:1180px;margin:clamp(56px,9vw,110px) auto 0;
+  padding-top:16px;border-top:1px solid rgba(242,240,231,.28);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  font-family:var(--mono);font-size:var(--micro);
+  letter-spacing:var(--track);text-transform:uppercase;opacity:.66;
+}
+
+/* ─────────────────────────────────────────────
+   placement
+   ───────────────────────────────────────────── */
+#fig1{left:14.5%;top:72%;--w:clamp(106px,11.2vw,168px)}
+#fig2{left:21%;top:24%;--w:clamp(154px,18vw,268px)}
+#fig3{left:79%;top:16.5%;--w:clamp(120px,13.2vw,198px)}
+#fig4{left:80%;top:68.5%;--w:clamp(132px,15.5vw,232px)}
+
+@media(max-width:900px){
+  .seq{height:400vh;height:400svh}
+  #fig1{left:19%;top:73%;--w:88px}
+  #fig2{left:27%;top:19.5%;--w:126px}
+  #fig3{left:75%;top:18%;--w:104px}
+  #fig4{left:75%;top:74%;--w:98px}
+  .mark{top:46%}
+  .cap{margin-top:9px;font-size:8.5px;letter-spacing:.12em}
+  .cap__rule{width:11px}
+}
+@media(max-width:560px){
+  .seq{height:340vh;height:340svh}
+  #fig1{left:23%;top:74%;--w:74px}
+  #fig2{left:32%;top:18%;--w:104px}
+  #fig3{left:73%;top:15.5%;--w:80px}
+  #fig4{left:73.5%;top:75.5%;--w:82px}
+  .cap{display:none}
+  .mark__line{font-size:clamp(50px,16vw,74px)}
+}
+</style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<header class="chrome">
+  <span class="chrome__mark">&amp;things</span>
+  <a class="chrome__link" href="mailto:hello@andthings.studio">Contact</a>
+</header>
+
+<main>
+<section class="seq" id="seq">
+  <div class="seq__inner" id="pin">
+
+    <div class="stage" id="stage" aria-hidden="true">
+
+      <!-- ambient marks -->
+      <svg class="marks" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <path id="m-arc" d="M300,196 C480,120 720,140 872,214" stroke-dasharray="2 7"/>
+        <path id="m-arc2" d="M258,566 C420,660 760,668 930,586" stroke-dasharray="1 8"/>
+        <g id="m-dots" fill="var(--hair-soft)"></g>
+      </svg>
+
+      <!-- ─── fig 1 · dehiscence ─── -->
+      <figure class="fig" id="fig1">
+        <div class="fig__inner">
+          <svg viewBox="0 0 160 148">
+            <g id="f1-arcs" class="f-hair f-hair--soft" stroke-dasharray="2 5">
+              <path id="a1" d="M80,32 C88,18 106,9 124,7"/>
+              <path id="a2" d="M80,52 C93,45 113,42 130,34"/>
+              <path id="a3" d="M80,72 C65,66 46,64 28,58"/>
+              <path id="a4" d="M80,92 C67,89 50,93 33,89"/>
+              <path id="a5" d="M80,110 C95,111 113,117 127,124"/>
+            </g>
+            <g id="f1-valveL" class="f-green"><path d="M80,126 C57,115 38,88 43,55 C46,28 63,11 80,7 Z" stroke="var(--paper)" stroke-width="1.8"/></g>
+            <g id="f1-valveR" class="f-green"><path d="M80,126 C103,115 122,88 117,55 C114,28 97,11 80,7 Z" stroke="var(--paper)" stroke-width="1.8"/></g>
+            <g id="f1-seeds" class="f-ink">
+              <ellipse data-arc="#a1" cx="80" cy="32" rx="3.4" ry="4.6"/>
+              <ellipse data-arc="#a2" cx="80" cy="52" rx="3.4" ry="4.6"/>
+              <ellipse data-arc="#a3" cx="80" cy="72" rx="3.4" ry="4.6"/>
+              <ellipse data-arc="#a4" cx="80" cy="92" rx="3.4" ry="4.6"/>
+              <ellipse data-arc="#a5" cx="80" cy="110" rx="3.4" ry="4.6"/>
+            </g>
+            <path class="f-hair" d="M80,126 L80,142" stroke-dasharray="0 0"/>
+          </svg>
+          <figcaption class="cap"><i class="cap__rule"></i><span class="cap__num">fig.&nbsp;1</span><span class="cap__name">dehiscence</span></figcaption>
+        </div>
+      </figure>
+
+      <!-- ─── fig 2 · construction ─── -->
+      <figure class="fig" id="fig2">
+        <div class="fig__inner">
+          <svg viewBox="0 0 200 134">
+            <g id="f2-scaffold">
+              <g class="f-hair" opacity=".55">
+                <path d="M18,106 L48,20" stroke-dasharray="3 3"/>
+                <path d="M186,26 L150,118" stroke-dasharray="3 3"/>
+              </g>
+              <g class="f-hair f-hair--soft" stroke-dasharray="1 5">
+                <path d="M18,106 H186 M18,26 H186"/>
+              </g>
+              <circle cx="48" cy="20" r="3.6" class="f-ink"/>
+              <circle cx="150" cy="118" r="3.6" class="f-ink"/>
+              <rect x="13" y="101" width="10" height="10" class="f-none" stroke="var(--ink)" stroke-width="1.4"/>
+              <rect x="181" y="21" width="10" height="10" class="f-none" stroke="var(--ink)" stroke-width="1.4"/>
+            </g>
+            <path id="f2-curve" class="f-hair" d="M18,106 C48,20 150,118 186,26" stroke-width="1.4"/>
+            <g id="f2-nib">
+              <path class="f-green" d="M0,-7 L4.4,5 L0,2.6 L-4.4,5 Z"/>
+            </g>
+          </svg>
+          <figcaption class="cap"><i class="cap__rule"></i><span class="cap__num">fig.&nbsp;2</span><span class="cap__name">construction</span></figcaption>
+        </div>
+      </figure>
+
+      <!-- ─── fig 3 · coincidence ─── -->
+      <figure class="fig" id="fig3">
+        <div class="fig__inner">
+          <svg viewBox="0 0 172 172">
+            <g class="f-hair" opacity=".62">
+              <circle cx="86" cy="86" r="30" stroke-dasharray="5 4"/>
+              <circle cx="86" cy="86" r="53" stroke-dasharray="4 4"/>
+              <circle cx="86" cy="86" r="74" stroke-dasharray="3 4"/>
+            </g>
+            <path id="f3-radius" class="f-hair" d="M86,86 L86,8"/>
+            <g class="f-hair"><path d="M79,86 H93 M86,79 V93"/></g>
+            <g id="f3-o1"><circle cx="86" cy="56" r="3.2" class="f-ink"/></g>
+            <g id="f3-o2"><circle cx="86" cy="33" r="4.2" class="f-green"/></g>
+            <g id="f3-o3"><circle cx="86" cy="12" r="2.6" class="f-ink"/></g>
+          </svg>
+          <figcaption class="cap"><i class="cap__rule"></i><span class="cap__num">fig.&nbsp;3</span><span class="cap__name">coincidence</span></figcaption>
+        </div>
+      </figure>
+
+      <!-- ─── fig 4 · interference ─── -->
+      <figure class="fig" id="fig4">
+        <div class="fig__inner">
+          <svg viewBox="0 0 172 172">
+            <defs><clipPath id="f4-disc"><circle cx="86" cy="86" r="76"/></clipPath></defs>
+            <circle cx="86" cy="86" r="76" fill="var(--green)"/>
+            <g clip-path="url(#f4-disc)">
+              <g id="f4-gridA" fill="var(--paper)"></g>
+              <g id="f4-gridB" fill="var(--ink)"></g>
+            </g>
+          </svg>
+          <figcaption class="cap"><i class="cap__rule"></i><span class="cap__num">fig.&nbsp;4</span><span class="cap__name">interference</span></figcaption>
+        </div>
+      </figure>
+    </div>
+
+    <!-- ─── wordmark ─── -->
+    <div class="mark">
+      <h1 class="mark__line">
+        <span class="amp" id="amp" aria-hidden="true">
+          <span class="amp__glyph amp__out">&amp;</span>
+          <span class="amp__glyph amp__fill" id="ampFill">&amp;</span>
+        </span><span class="mark__word" id="word" aria-hidden="true">things</span>
+        <span class="sr">&amp;things — design studio</span>
+      </h1>
+      <p class="mark__sub" id="sub">Everything after the ampersand.</p>
+      <p class="mark__meta" id="meta">Brand · Product · Objects · <em>&amp;</em></p>
+    </div>
+
+    <div class="cue" id="cue" aria-hidden="true">
+      <span>Scroll to resolve</span>
+      <span class="cue__rail"><i class="cue__bead" id="bead"></i></span>
+    </div>
+
+    <!-- ─── inversion ─── -->
+    <div class="flood" id="flood" aria-hidden="true"></div>
+    <div class="close" id="close">
+      <p class="close__line">Two things, <em>and then a third.</em></p>
+      <p class="close__meta">&amp;things — design studio</p>
+    </div>
+
+  </div>
+</section>
+
+<footer class="tail">
+  <p class="tail__lede">Two things, <em>and then a third.</em></p>
+  <div class="tail__grid">
+    <p class="tail__body">We take the parts of a brief that don't fit together yet and make them into one object. Brand systems, products, and <em>whatever the project turns out to need.</em></p>
+    <div class="tail__col">
+      <span class="tail__label">New work</span>
+      <a class="tail__link" href="mailto:hello@andthings.studio">hello@andthings.studio</a>
+      <span class="tail__label" style="margin-top:18px">Studio</span>
+      <span class="tail__link" style="border:0;padding:0">Remote &amp; occasionally in person</span>
+    </div>
+  </div>
+  <div class="tail__foot">
+    <span>&amp;things</span>
+    <span>Four figures, one ampersand</span>
+    <span>© 2026</span>
+  </div>
+</footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/MotionPathPlugin.min.js"></script>
+<script>
+(() => {
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const GREEN = "#1E9E48";
+
+gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
+// a mobile toolbar sliding away is not a layout change worth re-measuring for
+ScrollTrigger.config({ ignoreMobileResize: true });
+
+/* ─────────────────────────────────────────────
+   1 · generated geometry
+   ───────────────────────────────────────────── */
+
+// fig 4 — two dot lattices. Their overlap is the whole point: rotating one
+// against the other by a few degrees blooms real moiré out of nothing.
+function lattice(host, { pitch, r, phase }) {
+  const frag = document.createDocumentFragment();
+  const n = Math.ceil(172 / pitch) + 3;
+  for (let y = -3; y <= n; y++) {
+    for (let x = -3; x <= n; x++) {
+      const c = document.createElementNS(NS, "circle");
+      c.setAttribute("cx", (x * pitch + phase).toFixed(2));
+      c.setAttribute("cy", (y * pitch + phase).toFixed(2));
+      c.setAttribute("r", r);
+      frag.appendChild(c);
+    }
+  }
+  host.appendChild(frag);
+}
+lattice($("#f4-gridA"), { pitch: 7.4, r: 1.75, phase: 1.2 });
+lattice($("#f4-gridB"), { pitch: 7.4, r: 1.30, phase: 4.9 });
+
+// ambient stipple — deterministic scatter, held off the type
+(() => {
+  const host = $("#m-dots");
+  let seed = 20260902;
+  const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+  for (let i = 0; i < 52; i++) {
+    const x = 60 + rnd() * 1080, y = 60 + rnd() * 680, r = 0.7 + rnd() * 1.5;
+    if (x > 290 && x < 910 && y > 270 && y < 530) continue;
+    const c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", x.toFixed(1));
+    c.setAttribute("cy", y.toFixed(1));
+    c.setAttribute("r", r.toFixed(2));
+    c.setAttribute("opacity", (0.25 + rnd() * 0.5).toFixed(2));
+    host.appendChild(c);
+  }
+})();
+
+/* ─────────────────────────────────────────────
+   2 · resting state
+   ───────────────────────────────────────────── */
+const curve  = $("#f2-curve");
+const radius = $("#f3-radius");
+const seeds  = $$("#f1-seeds ellipse");
+const caps   = $$(".cap");
+
+const curveLen  = curve.getTotalLength();
+const radiusLen = radius.getTotalLength();
+const CURVE_REST = 0.30;          // fig 2 opens mid-stroke: a line already begun
+
+gsap.set(curve,  { strokeDasharray: curveLen,  strokeDashoffset: curveLen * (1 - CURVE_REST) });
+gsap.set(radius, { strokeDasharray: radiusLen, strokeDashoffset: radiusLen });
+gsap.set("#f2-nib", {
+  motionPath: { path: curve, align: curve, alignOrigin: [0.5, 0.5], autoRotate: true,
+                start: CURVE_REST, end: CURVE_REST }
+});
+gsap.set("#f1-arcs > path", { opacity: 0 });
+
+/* ─────────────────────────────────────────────
+   3 · load-in — the ampersand arrives, the word follows it
+   ───────────────────────────────────────────── */
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+if (!reduced) {
+  gsap.set(["#amp", "#word", "#sub", "#meta", ".fig", "#cue", ".marks"], { opacity: 0 });
+  gsap.timeline({ delay: 0.15, defaults: { ease: "power3.out" } })
+    .to("#amp",   { opacity: 1, y: 0, duration: 1.0, startAt: { y: 14 } })
+    .to("#word",  { opacity: 1, x: 0, duration: 1.1, startAt: { x: -34 } }, "-=0.72")
+    .to("#sub",   { opacity: 1, y: 0, duration: 0.8, startAt: { y: 10 } }, "-=0.62")
+    .to("#meta",  { opacity: 1, duration: 0.8 }, "-=0.6")
+    .to(".fig",   { opacity: 1, scale: 1, duration: 1.2,
+                    stagger: { each: 0.11, from: "random" }, startAt: { scale: 0.93 } }, "-=1.0")
+    .to(".marks", { opacity: 1, duration: 1.4 }, "-=1.0")
+    .to("#cue",   { opacity: 1, duration: 0.7 }, "-=0.5");
+
+  gsap.to("#bead", { y: 22, duration: 1.5, ease: "power2.inOut", repeat: -1, yoyo: true });
+}
+
+/* ─────────────────────────────────────────────
+   4 · the sequence
+   ───────────────────────────────────────────── */
+const mm = gsap.matchMedia();
+
+mm.add("(prefers-reduced-motion: no-preference)", () => {
+
+  const amp = $("#amp");
+  // Where the glyph has to travel to sit dead centre. Measured with the
+  // sequence transform zeroed so it never compounds across refreshes.
+  const target = { x: 0, y: 0 };
+  function measure() {
+    gsap.set(amp, { x: 0, y: 0, scale: 1 });
+    const a = amp.getBoundingClientRect();
+    target.x = window.innerWidth  / 2 - (a.left + a.width  / 2);
+    target.y = window.innerHeight / 2 - (a.top  + a.height / 2);
+  }
+  measure();
+
+  // .fig sits at translate(-50%,-50%), so offsetLeft/Top *is* its visual
+  // centre — transform-independent, which matters on refresh.
+  const toCentre = el => ({
+    x: () => window.innerWidth  / 2 - el.offsetLeft,
+    y: () => window.innerHeight / 2 - el.offsetTop
+  });
+
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: "#seq",
+      start: "top top",
+      end: "bottom bottom",
+      pin: "#pin",
+      scrub: 0.75,
+      anticipatePin: 1,
+      invalidateOnRefresh: true,
+      onRefreshInit: measure
+    }
+  });
+
+  /* ── the page steps back ──────────────────────────────── */
+  tl.to("#cue",   { opacity: 0, duration: 6, ease: "none" }, 0)
+    .to("#sub",   { opacity: 0, y: -10, duration: 12, ease: "power2.in" }, 5)
+    .to("#meta",  { opacity: 0, duration: 10, ease: "power2.in" }, 5)
+    .to("#word",  { x: 92, opacity: 0, scale: 0.92, duration: 20, ease: "power2.out" }, 6)
+    .to(".marks", { opacity: 0.45, duration: 30, ease: "none" }, 10)
+    // ambient dashes crawl outward rather than fading — the page keeps breathing
+    .to(["#m-arc", "#m-arc2"], { strokeDashoffset: -120, duration: 74, ease: "none" }, 0);
+
+  /* ── & · become ────────────────────────────────────────
+     hairline outline floods green from the baseline up,
+     then grows until the fill is the page.                 */
+  tl.to("#ampFill", { "--flood": "0%", duration: 26, ease: "power1.inOut" }, 9)
+    .to(amp, { x: () => target.x, y: () => target.y, scale: 2.4,
+               duration: 40, ease: "power2.inOut" }, 11);
+
+  /* ── fig 1 · dehiscence — split, then throw ───────────── */
+  tl.to("#f1-valveL", { rotation: -26, duration: 26, ease: "back.out(1.5)", svgOrigin: "80 126" }, 15)
+    .to("#f1-valveR", { rotation:  26, duration: 26, ease: "back.out(1.5)", svgOrigin: "80 126" }, 16)
+    .to("#f1-arcs > path", { opacity: 1, strokeDashoffset: -34, duration: 30,
+                             ease: "none", stagger: 1.4 }, 19);
+
+  seeds.forEach((s, i) => {
+    tl.to(s, {
+      motionPath: { path: s.dataset.arc, align: s.dataset.arc,
+                    alignOrigin: [0.5, 0.5], autoRotate: true },
+      duration: 26 + i * 1.6,
+      ease: "power3.out"
+    }, 20 + i * 1.7);
+  });
+
+  /* ── fig 2 · construction — nib leads, line follows,
+        scaffolding withdrawn once the curve can stand ───── */
+  tl.to("#f2-nib", {
+      motionPath: { path: curve, align: curve, alignOrigin: [0.5, 0.5], autoRotate: true,
+                    start: CURVE_REST, end: 1 },
+      duration: 30, ease: "none"
+    }, 20)
+    .to(curve, { strokeDashoffset: 0, duration: 30, ease: "none" }, 20)
+    .to("#f2-nib", { opacity: 0, duration: 5, ease: "none" }, 50)
+    .to("#f2-scaffold", { opacity: 0.1, duration: 12, ease: "power2.inOut" }, 46);
+
+  /* ── fig 3 · coincidence — three rates, one alignment ─── */
+  tl.to("#f3-o1", { rotation:  414, duration: 50, ease: "power1.inOut", svgOrigin: "86 86" }, 10)
+    .to("#f3-o2", { rotation: -666, duration: 50, ease: "power1.inOut", svgOrigin: "86 86" }, 10)
+    .to("#f3-o3", { rotation:  774, duration: 50, ease: "power1.inOut", svgOrigin: "86 86" }, 10)
+    .to(radius,   { strokeDashoffset: 0, rotation: 54, duration: 8,
+                    ease: "power2.out", svgOrigin: "86 86" }, 56);
+
+  /* ── fig 4 · interference — six degrees is the whole trick ── */
+  tl.to("#f4-gridB",   { rotation: 6.2, scale: 1.045, duration: 48,
+                         ease: "sine.inOut", svgOrigin: "86 86" }, 18)
+    .fromTo("#f4-gridA", { opacity: 0.62 }, { opacity: 1, duration: 40, ease: "sine.inOut" }, 18);
+
+  /* ── captions index the sequence: each rule draws as its
+        figure starts working, and names its own verb ─────── */
+  const capAt = [15, 20, 12, 18];
+  caps.forEach((c, i) => {
+    tl.to(c.querySelector(".cap__rule"), { scaleX: 1, duration: 6, ease: "power2.out" }, capAt[i])
+      .to(c.querySelector(".cap__name"), { color: GREEN, duration: 6, ease: "none" }, capAt[i] + 1);
+  });
+
+  /* ── absorption — every figure is pulled into the glyph ── */
+  ["#fig3", "#fig2", "#fig4", "#fig1"].forEach((sel, i) => {
+    const el = $(sel);
+    tl.to(el, Object.assign(toCentre(el), {
+      scale: 0.16, opacity: 0, duration: 20, ease: "power2.in"
+    }), 56 + i * 2.2);
+  });
+  tl.to([".marks", ".cap"], { opacity: 0, duration: 12, ease: "power1.in" }, 58);
+
+  /* ── the inversion ─────────────────────────────────────── */
+  tl.to(amp,      { scale: 26, duration: 38, ease: "power3.in" }, 60)
+    .to("#flood", { opacity: 1, duration: 15, ease: "power2.in" }, 81)
+    .set(".chrome", { mixBlendMode: "normal" }, 84)
+    .to(".chrome", { color: "#F2F0E7", "--hair-soft": "rgba(242,240,231,.45)",
+                     duration: 8, ease: "none" }, 84)
+    .fromTo("#close", { opacity: 0, y: 26 },
+                      { opacity: 1, y: 0, duration: 15, ease: "power2.out" }, 87);
+
+  return () => { if (tl.scrollTrigger) tl.scrollTrigger.kill(); tl.kill(); };
+});
+
+/* ── reduced motion: same story, held still ─────────────── */
+mm.add("(prefers-reduced-motion: reduce)", () => {
+  gsap.set("#seq", { height: "100vh" });
+  gsap.set(["#cue", "#close", "#flood"], { display: "none" });
+  gsap.set("#ampFill", { "--flood": "0%" });
+  gsap.set("#f1-valveL", { rotation: -26, svgOrigin: "80 126" });
+  gsap.set("#f1-valveR", { rotation:  26, svgOrigin: "80 126" });
+  gsap.set("#f1-arcs > path", { opacity: 1 });
+  seeds.forEach(s => gsap.set(s, {
+    motionPath: { path: s.dataset.arc, align: s.dataset.arc, alignOrigin: [0.5, 0.5], end: 1 }
+  }));
+  gsap.set(curve, { strokeDashoffset: 0 });
+  gsap.set("#f2-nib", { opacity: 0 });
+  gsap.set("#f2-scaffold", { opacity: 0.1 });
+  ["#f3-o1", "#f3-o2", "#f3-o3"].forEach(s => gsap.set(s, { rotation: 54, svgOrigin: "86 86" }));
+  gsap.set(radius, { strokeDashoffset: 0, rotation: 54, svgOrigin: "86 86" });
+  gsap.set("#f4-gridB", { rotation: 6.2, scale: 1.045, svgOrigin: "86 86" });
+  gsap.set(".cap__rule", { scaleX: 1 });
+  gsap.set(".cap__name", { color: GREEN });
+  ScrollTrigger.refresh();
+});
+
+/* fonts change the metrics the pin was measured against */
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => ScrollTrigger.refresh());
+window.addEventListener("load", () => ScrollTrigger.refresh());
+})();
+</script>
+</body>
+</html>

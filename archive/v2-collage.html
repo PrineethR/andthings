@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&amp;things — a design studio, -ish</title>
+<meta name="description" content="&things is a studio for objects, spaces, people, futures, and stuff.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IM+Fell+English:ital@1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────
+   &things — tokens
+   ───────────────────────────────────────────── */
+:root{
+  --paper:#F2EFE6;
+  --paper-edge:#EAE5D8;
+  --card:#FBF9F3;
+  --ink:#16170F;
+  --green:#1E9E48;
+  --green-hi:#2AAB55;
+  --green-lo:#188A3E;
+  --hair:rgba(22,23,15,.62);
+  --hair-soft:rgba(22,23,15,.3);
+
+  --serif:"EB Garamond",Garamond,"Times New Roman",serif;
+  --fell:"IM Fell English","EB Garamond",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+
+  --micro:clamp(9px,.7vw,10.5px);
+  --track:.2em;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--paper)}
+body{
+  margin:0;color:var(--ink);font-family:var(--serif);
+  background:var(--paper);
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+::selection{background:var(--green);color:var(--card)}
+a{color:inherit}
+:focus-visible{outline:1.5px solid var(--green);outline-offset:4px}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.defs{position:absolute;width:0;height:0;overflow:hidden}
+
+/* paper grain — one static layer */
+.grain{
+  position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.5;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.34'/%3E%3C/svg%3E");
+}
+
+/* ─────────────────────────────────────────────
+   chrome
+   ───────────────────────────────────────────── */
+.chrome{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:clamp(16px,2.2vw,28px) clamp(18px,3.2vw,44px);
+  font-family:var(--mono);font-size:var(--micro);letter-spacing:var(--track);text-transform:uppercase;
+  mix-blend-mode:multiply;
+}
+.chrome__mark{font-family:var(--serif);font-size:19px;letter-spacing:0;text-transform:none}
+.chrome__mark i{font-style:italic}
+.chrome__link{text-decoration:none;border-bottom:1px solid var(--hair-soft);padding-bottom:2px}
+.chrome__link:hover{color:var(--green);border-bottom-color:var(--green)}
+
+/* ─────────────────────────────────────────────
+   sequence
+   ───────────────────────────────────────────── */
+.seq{position:relative;height:480vh;height:480svh}
+.seq__inner{
+  position:relative;overflow:hidden;width:100%;
+  height:100vh;height:100svh;
+  /* the one gradient on the page ground: a vignette you shouldn't notice */
+  background:radial-gradient(115% 85% at 50% 46%,#F5F2EA 0%,var(--paper) 55%,var(--paper-edge) 100%);
+}
+.stage{position:absolute;inset:0;will-change:transform}
+
+.piece{position:absolute;margin:0;width:var(--w)}
+.piece svg{display:block;width:100%;height:auto;overflow:visible}
+.c{transform:translate(-50%,-50%)}            /* centred pieces */
+
+/* shared SVG paint */
+.ln{fill:none;stroke:var(--ink);stroke-width:1.1;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
+.ln-soft{stroke:var(--hair-soft)}
+.card{fill:var(--card)}
+.ink{fill:var(--ink)}
+.grn{fill:var(--green)}
+.shadow{fill:var(--ink);opacity:.1}
+
+/* tombstone captions, as on a museum wall */
+.tomb{
+  display:grid;gap:3px;margin-top:12px;
+  font-family:var(--serif);font-size:clamp(13px,1.05vw,15.5px);line-height:1.1;color:var(--ink);
+  white-space:nowrap;
+}
+.tomb__t{font-style:italic}
+.tomb__n{font-style:normal;margin-right:.35em;color:var(--hair)}
+.tomb__m{font-family:var(--mono);font-size:var(--micro);letter-spacing:.14em;text-transform:uppercase;color:var(--hair)}
+
+/* ─────────────────────────────────────────────
+   wordmark
+   ───────────────────────────────────────────── */
+.mark{
+  position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);
+  z-index:5;text-align:center;width:min(94vw,900px);
+}
+.mark__line{
+  margin:0;font-weight:400;line-height:1;
+  font-size:clamp(64px,11vw,164px);letter-spacing:-.012em;
+  white-space:nowrap;display:inline-flex;align-items:baseline;
+}
+.amp-slot{font-style:italic;margin-right:.05em;position:relative}
+.js-amp .amp-slot{color:transparent}
+.probe{display:inline-block;width:0;height:0;vertical-align:baseline}
+.noun{position:relative;display:inline-block;text-align:left}
+.noun__w{display:inline-block;transform-origin:0% 80%;will-change:transform,opacity}
+.noun__w + .noun__w{position:absolute;left:0;top:0}
+.js .noun__w + .noun__w{opacity:0}
+.js .stage .piece,.js #noun,.js #sub,.js #cue{opacity:0}
+.js #ampIntro{opacity:0}
+
+.mark__sub{
+  margin:clamp(14px,1.8vw,24px) 0 0;
+  font-size:clamp(17px,1.65vw,23px);
+}
+.mark__sub em{font-style:italic}
+
+/* the ampersand lives here, as a true vector path, so it stays sharp at any zoom */
+.amp-layer{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none;overflow:visible}
+#ampFill{fill:var(--green)}
+#ampLine{fill:none;stroke:var(--ink);stroke-width:1.15;vector-effect:non-scaling-stroke}
+.js-amp:not(.js-ready) .amp-layer{visibility:hidden}
+
+/* cue */
+.cue{
+  position:absolute;left:50%;bottom:clamp(20px,3.2vw,38px);transform:translateX(-50%);z-index:7;
+  display:flex;flex-direction:column;align-items:center;gap:9px;
+  font-family:var(--mono);font-size:var(--micro);letter-spacing:var(--track);text-transform:uppercase;color:var(--hair);
+  white-space:nowrap;
+}
+.cue__rail{width:1px;height:32px;background:var(--hair-soft);position:relative;overflow:hidden}
+.cue__bead{position:absolute;left:0;top:0;width:1px;height:11px;background:var(--green)}
+
+/* inversion */
+.flood{position:absolute;inset:0;background:var(--green);opacity:0;z-index:8;pointer-events:none}
+.close{
+  position:absolute;inset:0;z-index:9;opacity:0;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:0 6vw;text-align:center;color:var(--card);gap:.1em;
+}
+.close__line{margin:0;font-size:clamp(34px,5.6vw,84px);font-weight:400;line-height:1.02;letter-spacing:-.018em}
+.close__line i{font-style:italic}
+.close__line--b{font-style:italic}
+
+/* ─────────────────────────────────────────────
+   tail
+   ───────────────────────────────────────────── */
+.tail{
+  background:var(--green);color:var(--card);
+  padding:clamp(64px,11vw,140px) clamp(20px,6vw,90px) clamp(30px,4.6vw,56px);
+}
+.tail__lede{display:none}
+.tail__grid{max-width:1180px;margin:0 auto;display:grid;gap:clamp(40px,6vw,72px)}
+@media(min-width:860px){.tail__grid{grid-template-columns:1.2fr .8fr;gap:clamp(56px,8vw,120px)}}
+.tail__body{margin:0;font-size:clamp(21px,2.3vw,32px);line-height:1.28;letter-spacing:-.006em;max-width:23ch}
+.tail__body i{font-style:italic}
+.tail__cols{display:grid;gap:30px}
+.tail__label{display:block;margin-bottom:10px;font-family:var(--mono);font-size:var(--micro);letter-spacing:.24em;text-transform:uppercase;opacity:.7}
+.tail__list{margin:0;padding:0;list-style:none;font-size:clamp(18px,1.6vw,22px);line-height:1.35}
+.tail__list span{display:inline-block;width:2.1em;opacity:.62;font-variant-numeric:oldstyle-nums}
+.tail__list i{font-style:italic}
+.tail__not{margin:0;font-size:clamp(18px,1.6vw,22px);line-height:1.35}
+.tail__not s{text-decoration-thickness:1px;text-decoration-color:rgba(251,249,243,.7)}
+.tail__link{font-size:clamp(18px,1.6vw,22px);text-decoration:none;border-bottom:1px solid rgba(251,249,243,.42);padding-bottom:2px}
+.tail__link:hover{border-bottom-color:var(--card)}
+.tail__foot{
+  max-width:1180px;margin:clamp(56px,9vw,110px) auto 0;padding-top:16px;
+  border-top:1px solid rgba(251,249,243,.28);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  font-family:var(--mono);font-size:var(--micro);letter-spacing:var(--track);text-transform:uppercase;opacity:.7;
+}
+@media(prefers-reduced-motion:reduce){
+  .tail__lede{
+    display:block;max-width:1180px;margin:0 auto clamp(40px,6vw,80px);
+    font-size:clamp(34px,5.4vw,72px);line-height:1.04;letter-spacing:-.018em;
+  }
+  .tail__lede i{font-style:italic}
+}
+
+/* ─────────────────────────────────────────────
+   placement
+   ───────────────────────────────────────────── */
+#sky  {left:10.5%;top:19%;--w:clamp(150px,15.5vw,236px)}
+#fig1 {--w:clamp(200px,19.5vw,300px)}       /* positioned by script, finger to the & */
+#fig2 {left:17.5%;top:76%;--w:clamp(106px,10.4vw,164px)}
+#fig3 {left:77%;top:0;--w:clamp(170px,16.5vw,262px);transform:translate(-50%,0)}
+#fig4 {left:78.5%;top:70%;--w:clamp(180px,17.6vw,272px)}
+#fig3 .tomb{position:absolute;left:4%;top:100%}
+
+.hand-rot{transform-origin:var(--tipx) var(--tipy)}
+#fig1 .tomb{position:absolute;left:4%;top:calc(var(--w) * .48 + 6px)}
+
+@media(max-width:900px){
+  .seq{height:420vh;height:420svh}
+  #sky {left:17%;top:15%;--w:124px}
+  #fig2{left:22%;top:77%;--w:86px}
+  #fig3{left:78%;top:34px;--w:150px}
+  #fig4{left:74%;top:77%;--w:150px}
+  #fig1{--w:170px}
+}
+@media(max-width:560px){
+  .seq{height:360vh;height:360svh}
+  .mark__line{font-size:clamp(58px,17.5vw,90px)}
+  .tomb__m{display:none}
+  .tomb{font-size:12.5px;margin-top:6px}
+  #sky {left:21%;top:13%;--w:100px}
+  #fig2{left:22%;top:79%;--w:70px}
+  #fig3{left:70%;top:46px;--w:118px}
+  #fig4{left:73%;top:80%;--w:118px}
+  #fig1{--w:132px}
+  #fig1 .tomb{display:none}
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add("js","js-amp")</script>
+
+<div class="grain" aria-hidden="true"></div>
+
+<!-- shared paint: patterns, gradients, the hand-cut edge -->
+<svg class="defs" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="hatch" width="3.2" height="3.2" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
+      <line x1="0" y1="0" x2="0" y2="3.2" stroke="#16170F" stroke-width=".75"/>
+    </pattern>
+    <pattern id="hatchX" width="3.6" height="3.6" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)">
+      <line x1="0" y1="0" x2="0" y2="3.6" stroke="#16170F" stroke-width=".6"/>
+    </pattern>
+    <linearGradient id="gGreen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2AAB55"/><stop offset="1" stop-color="#188A3E"/>
+    </linearGradient>
+    <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#26A651"/><stop offset="1" stop-color="#1A9142"/>
+    </linearGradient>
+    <linearGradient id="gCloud" x1="0" y1="0" x2="0" y2="1">
+      <stop offset=".35" stop-color="#FFFEFA"/><stop offset="1" stop-color="#EDE8DA"/>
+    </linearGradient>
+    <radialGradient id="gKnob" cx=".38" cy=".32" r=".75">
+      <stop offset="0" stop-color="#3B3C33"/><stop offset="1" stop-color="#16170F"/>
+    </radialGradient>
+    <filter id="cut" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="inked" x="-10%" y="-20%" width="120%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="9" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.7" result="speck"/>
+      <feComposite in="d" in2="speck" operator="in"/>
+    </filter>
+  </defs>
+</svg>
+
+<header class="chrome">
+  <span class="chrome__mark"><i>&amp;</i>things</span>
+  <a class="chrome__link" href="mailto:hello@andthings.studio">Contact</a>
+</header>
+
+<main>
+<section class="seq" id="seq">
+  <div class="seq__inner" id="pin">
+
+    <div class="stage" id="stage" aria-hidden="true">
+
+      <!-- ambient stipple: drifts, never performs -->
+      <svg class="piece" id="dust" style="inset:0;width:100%;height:100%" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice"><g id="dustG"></g></svg>
+
+      <!-- ── a scrap of sky, and a cloud that leaves it ── -->
+      <div class="piece c" id="sky">
+        <svg viewBox="0 0 200 150">
+          <g transform="rotate(-4 86 70)">
+            <rect x="23" y="22" width="132" height="104" class="shadow"/>
+            <rect x="20" y="18" width="132" height="104" fill="url(#gSky)" filter="url(#cut)"/>
+          </g>
+          <!-- tape: the one thing holding the sky down -->
+          <rect x="4" y="12" width="46" height="14" fill="#FBF9F3" opacity=".74" transform="rotate(-38 27 19)" filter="url(#cut)"/>
+          <g id="cloud">
+            <g transform="translate(106 40)">
+              <path class="shadow" transform="translate(3 3)" d="M10,46 C2,46 -1,38 5,33 C1,25 9,18 18,21 C20,11 33,6 41,14 C46,3 63,2 68,13 C76,7 88,12 87,22 C97,22 101,33 94,39 C94,45 88,47 82,46 Z"/>
+              <path id="cloudP" fill="url(#gCloud)" d="M10,46 C2,46 -1,38 5,33 C1,25 9,18 18,21 C20,11 33,6 41,14 C46,3 63,2 68,13 C76,7 88,12 87,22 C97,22 101,33 94,39 C94,45 88,47 82,46 Z"/>
+              <clipPath id="cloudClip"><path d="M10,46 C2,46 -1,38 5,33 C1,25 9,18 18,21 C20,11 33,6 41,14 C46,3 63,2 68,13 C76,7 88,12 87,22 C97,22 101,33 94,39 C94,45 88,47 82,46 Z"/></clipPath>
+              <path clip-path="url(#cloudClip)" fill="url(#hatch)" opacity=".55" d="M-4,37 C20,41 60,43 104,33 L104,52 L-4,52 Z"/>
+              <path class="ln" d="M10,46 C2,46 -1,38 5,33 C1,25 9,18 18,21 C20,11 33,6 41,14 C46,3 63,2 68,13 C76,7 88,12 87,22 C97,22 101,33 94,39 C94,45 88,47 82,46 Z"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+
+      <!-- ── I · provocation — a printer's manicule, aimed at the & ── -->
+      <figure class="piece" id="fig1">
+        <div class="hand-rot" id="handRot">
+          <div id="hand">
+            <svg viewBox="0 0 250 120">
+              <g transform="translate(3 4)" class="shadow">
+                <path d="M56,34 C74,28 102,25 124,31 C134,34 150,34 226,34 C236,34 246,38 246,44 C246,50 236,54 226,54 L146,54 C154,55 157,61 155,66 C153,72 147,74 139,73 C146,76 148,82 145,86 C142,90 136,91 129,90 C134,93 134,99 129,101 C124,103 116,103 108,101 C90,100 72,96 56,90 Z"/>
+                <path d="M62,22 L62,98 L22,100 Q13,94 17,87 Q7,82 13,74 Q5,67 13,60 Q5,52 13,45 Q7,37 17,32 Q13,25 22,21 Z"/>
+              </g>
+              <path id="handP" class="card" d="M56,34 C74,28 102,25 124,31 C134,34 150,34 226,34 C236,34 246,38 246,44 C246,50 236,54 226,54 L146,54 C154,55 157,61 155,66 C153,72 147,74 139,73 C146,76 148,82 145,86 C142,90 136,91 129,90 C134,93 134,99 129,101 C124,103 116,103 108,101 C90,100 72,96 56,90 Z"/>
+              <clipPath id="handClip"><path d="M56,34 C74,28 102,25 124,31 C134,34 150,34 226,34 C236,34 246,38 246,44 C246,50 236,54 226,54 L146,54 C154,55 157,61 155,66 C153,72 147,74 139,73 C146,76 148,82 145,86 C142,90 136,91 129,90 C134,93 134,99 129,101 C124,103 116,103 108,101 C90,100 72,96 56,90 Z"/></clipPath>
+              <g clip-path="url(#handClip)" fill="url(#hatch)">
+                <path d="M50,78 C80,90 112,96 160,82 L170,112 L50,112 Z"/>
+                <path d="M146,49 C180,51 210,51 240,48 L240,60 L146,60 Z" opacity=".8"/>
+              </g>
+              <path class="ln" d="M56,34 C74,28 102,25 124,31 C134,34 150,34 226,34 C236,34 246,38 246,44 C246,50 236,54 226,54 L146,54 C154,55 157,61 155,66 C153,72 147,74 139,73 C146,76 148,82 145,86 C142,90 136,91 129,90 C134,93 134,99 129,101 C124,103 116,103 108,101 C90,100 72,96 56,90"/>
+              <!-- thumb, nail, creases -->
+              <path class="card" d="M78,63 C92,56 112,54 128,57 C137,59 139,65 132,68 C118,72 98,73 84,72 Z"/>
+              <path class="ln" d="M78,63 C92,56 112,54 128,57 C137,59 139,65 132,68 C118,72 98,73 84,72"/>
+              <path class="ln ln-soft" d="M229,38 C237,38 240,41 240,44 C240,47 237,50 229,50"/>
+              <path class="ln ln-soft" d="M168,36 C166,41 166,47 168,52 M139,60 C143,62 145,65 144,68 M131,79 C134,81 135,84 134,86"/>
+              <!-- baroque cuff, cut from green paper -->
+              <path fill="url(#gGreen)" filter="url(#cut)" d="M62,22 L62,98 L22,100 Q13,94 17,87 Q7,82 13,74 Q5,67 13,60 Q5,52 13,45 Q7,37 17,32 Q13,25 22,21 Z"/>
+              <path d="M53,25 L53,95" stroke="#FBF9F3" stroke-width="1.6" stroke-dasharray="1 3.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <figcaption class="tomb"><span><span class="tomb__n">I.</span><span class="tomb__t">Provocation</span></span><span class="tomb__m">Ink, paper, one finger</span></figcaption>
+      </figure>
+
+      <!-- ── II · materializing — an idea of a vessel, then a vessel ── -->
+      <figure class="piece c" id="fig2">
+        <svg viewBox="0 0 160 212">
+          <path id="vesselGhost" class="ln" opacity=".5" stroke-dasharray="2 5" d="M58,14 L102,14 C103,18 101,21 96,22 L94,24 C92,36 92,48 95,58 C112,64 132,78 132,102 C132,138 110,170 94,188 L96,196 C100,198 102,200 102,204 L58,204 C58,200 60,198 64,196 L66,188 C50,170 28,138 28,102 C28,78 48,64 65,58 C68,48 68,36 66,24 L64,22 C59,21 57,18 58,14 Z"/>
+          <g id="vessel">
+            <path class="shadow" transform="translate(4 4)" d="M58,14 L102,14 C103,18 101,21 96,22 L94,24 C92,36 92,48 95,58 C112,64 132,78 132,102 C132,138 110,170 94,188 L96,196 C100,198 102,200 102,204 L58,204 C58,200 60,198 64,196 L66,188 C50,170 28,138 28,102 C28,78 48,64 65,58 C68,48 68,36 66,24 L64,22 C59,21 57,18 58,14 Z"/>
+            <path d="M94,30 C116,24 126,40 116,68 M66,30 C44,24 34,40 44,68" fill="none" stroke="#1E9E48" stroke-width="6" stroke-linecap="round"/>
+            <path id="vesselP" fill="url(#gGreen)" d="M58,14 L102,14 C103,18 101,21 96,22 L94,24 C92,36 92,48 95,58 C112,64 132,78 132,102 C132,138 110,170 94,188 L96,196 C100,198 102,200 102,204 L58,204 C58,200 60,198 64,196 L66,188 C50,170 28,138 28,102 C28,78 48,64 65,58 C68,48 68,36 66,24 L64,22 C59,21 57,18 58,14 Z"/>
+            <clipPath id="vesselClip"><path d="M58,14 L102,14 C103,18 101,21 96,22 L94,24 C92,36 92,48 95,58 C112,64 132,78 132,102 C132,138 110,170 94,188 L96,196 C100,198 102,200 102,204 L58,204 C58,200 60,198 64,196 L66,188 C50,170 28,138 28,102 C28,78 48,64 65,58 C68,48 68,36 66,24 L64,22 C59,21 57,18 58,14 Z"/></clipPath>
+            <g clip-path="url(#vesselClip)">
+              <path fill="url(#hatch)" opacity=".5" d="M104,40 C132,70 140,140 100,200 L150,210 L150,30 Z"/>
+              <rect x="20" y="97" width="120" height="2" fill="#FBF9F3"/>
+              <rect x="20" y="121" width="120" height="2" fill="#FBF9F3"/>
+              <g id="vesselDots" fill="#FBF9F3"></g>
+            </g>
+          </g>
+          <g id="stipple" fill="#16170F"></g>
+        </svg>
+        <figcaption class="tomb"><span><span class="tomb__n">II.</span><span class="tomb__t">Materializing</span></span><span class="tomb__m">Stipple, eventually clay</span></figcaption>
+      </figure>
+
+      <!-- ── III · playing — a mobile, hung from the top of the page ── -->
+      <figure class="piece" id="fig3">
+        <svg viewBox="0 0 240 190">
+          <path class="ln" d="M130,-1200 L130,18"/>
+          <g id="armA">
+            <path class="ln" d="M22,40 Q130,4 214,30"/>
+            <circle cx="130" cy="18" r="1.8" class="ink"/>
+            <path class="ln" d="M22,40 L22,60 M214,30 L214,52"/>
+            <g id="discA"><circle cx="22" cy="80" r="20" class="ink"/></g>
+            <g id="armB">
+              <path class="ln" d="M170,66 Q214,44 252,58"/>
+              <circle cx="214" cy="52" r="1.6" class="ink"/>
+              <path class="ln" d="M170,66 L170,84 M252,58 L252,74"/>
+              <g id="moon"><path fill="url(#gGreen)" d="M170,84 A18,18 0 1,0 170,120 A11,18 0 1,1 170,84 Z"/></g>
+              <g id="pip"><circle cx="252" cy="84" r="10" class="card"/><circle cx="252" cy="84" r="10" class="ln"/></g>
+            </g>
+          </g>
+        </svg>
+        <figcaption class="tomb"><span><span class="tomb__n">III.</span><span class="tomb__t">Playing</span></span><span class="tomb__m">Card, wire, a draught</span></figcaption>
+      </figure>
+
+      <!-- ── IV · publishing — one stamp, an edition of many ── -->
+      <figure class="piece c" id="fig4">
+        <svg viewBox="0 0 240 220">
+          <g id="sheets">
+            <g class="sheet" data-fan="-22" data-rest="-1"><rect x="48" y="101" width="150" height="108" class="shadow"/><rect x="45" y="98" width="150" height="108" class="card"/><rect x="45" y="98" width="150" height="108" class="ln ln-soft"/></g>
+            <g class="sheet" data-fan="22" data-rest="3"><rect x="48" y="101" width="150" height="108" class="shadow"/><rect x="45" y="98" width="150" height="108" class="card"/><rect x="45" y="98" width="150" height="108" class="ln ln-soft"/></g>
+            <g class="sheet" data-fan="-11" data-rest="-3.5"><rect x="48" y="101" width="150" height="108" class="shadow"/><rect x="45" y="98" width="150" height="108" class="card"/><rect x="45" y="98" width="150" height="108" class="ln ln-soft"/><rect x="60" y="112" width="44" height="2.4" class="ink" opacity=".5"/></g>
+            <g class="sheet" data-fan="11" data-rest="1.5"><rect x="48" y="101" width="150" height="108" class="shadow"/><rect x="45" y="98" width="150" height="108" class="card"/><rect x="45" y="98" width="150" height="108" class="ln ln-soft"/><rect x="60" y="112" width="44" height="2.4" class="ink" opacity=".5"/></g>
+            <g class="sheet" id="sheetTop" data-fan="0" data-rest="-2">
+              <rect x="48" y="101" width="150" height="108" class="shadow"/>
+              <rect x="45" y="98" width="150" height="108" class="card"/>
+              <rect x="45" y="98" width="150" height="108" class="ln ln-soft"/>
+              <rect x="60" y="112" width="52" height="3" class="ink" opacity=".75"/>
+              <rect x="60" y="122" width="120" height="1.2" class="ink" opacity=".35"/>
+              <rect x="60" y="128" width="108" height="1.2" class="ink" opacity=".35"/>
+              <rect x="60" y="134" width="116" height="1.2" class="ink" opacity=".35"/>
+              <rect x="60" y="140" width="64" height="1.2" class="ink" opacity=".35"/>
+              <g id="seal" filter="url(#inked)" opacity="0">
+                <rect x="84" y="154" width="72" height="34" rx="3" fill="none" stroke="#1E9E48" stroke-width="2"/>
+                <text x="120" y="180" text-anchor="middle" font-family="IM Fell English" font-style="italic" font-size="24" fill="#1E9E48">&amp;c.</text>
+              </g>
+            </g>
+          </g>
+          <g transform="translate(120 112)">
+            <g id="stamp">
+              <rect x="-32" y="-7" width="64" height="7" fill="#1E9E48"/>
+              <path d="M-37,-7 L37,-7 L32,-27 L-32,-27 Z" class="ink"/>
+              <rect x="-32" y="-20" width="64" height="2.2" fill="#FBF9F3" opacity=".85"/>
+              <rect x="-6.5" y="-50" width="13" height="24" class="ink"/>
+              <ellipse cx="0" cy="-63" rx="17" ry="14" fill="url(#gKnob)"/>
+            </g>
+          </g>
+        </svg>
+        <figcaption class="tomb"><span><span class="tomb__n">IV.</span><span class="tomb__t">Publishing</span></span><span class="tomb__m">Rubber, ink, edition of many</span></figcaption>
+      </figure>
+    </div>
+
+    <!-- ── wordmark ── -->
+    <div class="mark">
+      <h1 class="mark__line">
+        <span class="amp-slot" id="ampSlot" aria-hidden="true"><i class="probe" id="probe"></i>&amp;</span><span class="noun" id="noun" aria-hidden="true"><span class="noun__w" data-tilt="0">things</span><span class="noun__w" data-tilt="-2">objects</span><span class="noun__w" data-tilt="1.5">spaces</span><span class="noun__w" data-tilt="-1">people</span><span class="noun__w" data-tilt="2">futures</span><span class="noun__w" data-tilt="-1.5">stuff</span></span>
+        <span class="sr">&amp;things</span>
+      </h1>
+      <p class="mark__sub" id="sub">A design studio, <em>-ish.</em></p>
+    </div>
+
+    <svg class="amp-layer" id="ampLayer" aria-hidden="true">
+      <g id="ripples" fill="none" stroke="#16170F" stroke-width="1">
+        <circle r="0" opacity="0"/><circle r="0" opacity="0"/><circle r="0" opacity="0"/>
+      </g>
+      <g id="ampIntro">
+        <g id="ampG">
+          <clipPath id="floodClip" clipPathUnits="userSpaceOnUse"><rect id="floodRect" x="0" y="20" width="1000" height="900"/></clipPath>
+          <path id="ampFill" clip-path="url(#floodClip)"/>
+          <path id="ampLine"/>
+        </g>
+      </g>
+    </svg>
+
+    <div class="cue" id="cue" aria-hidden="true">
+      <span>Scroll for more things</span>
+      <span class="cue__rail"><i class="cue__bead" id="bead"></i></span>
+    </div>
+
+    <div class="flood" id="flood" aria-hidden="true"></div>
+    <div class="close" id="close">
+      <p class="close__line">You bring the X, Y and Z.</p>
+      <p class="close__line close__line--b">We&rsquo;ll bring the <span style="font-style:normal"><i>&amp;</i>things.</span></p>
+    </div>
+
+  </div>
+</section>
+
+<footer class="tail">
+  <p class="tail__lede">You bring the X, Y and Z. <i>We&rsquo;ll bring the &amp;things.</i></p>
+  <div class="tail__grid">
+    <p class="tail__body">A studio for objects, spaces, people, futures, and whatever turns up next. We treat design as something bigger than a discipline. If it needs doing, it&rsquo;s probably <i>one of our things.</i></p>
+    <div class="tail__cols">
+      <div>
+        <span class="tail__label">How we work</span>
+        <ol class="tail__list">
+          <li><span>i.</span><i>Provocation</i></li>
+          <li><span>ii.</span><i>Materializing</i></li>
+          <li><span>iii.</span><i>Playing</i></li>
+          <li><span>iv.</span><i>Publishing</i></li>
+        </ol>
+      </div>
+      <div>
+        <span class="tail__label">Not for</span>
+        <p class="tail__not"><s>Gambling</s>, <s>exclusivity</s>, and stuff like that.</p>
+      </div>
+      <div>
+        <span class="tail__label">Say hello</span>
+        <a class="tail__link" href="mailto:hello@andthings.studio">hello@andthings.studio</a>
+      </div>
+    </div>
+  </div>
+  <div class="tail__foot">
+    <span>&amp;things</span>
+    <span>Objects, spaces, people, futures &amp; stuff</span>
+    <span>© 2026</span>
+  </div>
+</footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+<script>
+(() => {
+"use strict";
+const root = document.documentElement;
+if (!window.gsap || !window.ScrollTrigger) { root.classList.remove("js", "js-amp"); return; }
+
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const NS = "http://www.w3.org/2000/svg";
+const GREEN = "#1E9E48", CARD = "#FBF9F3";
+const TAU = Math.PI * 2;
+const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+
+gsap.registerPlugin(ScrollTrigger);
+// a mobile toolbar sliding away is not a layout change worth re-measuring for
+ScrollTrigger.config({ ignoreMobileResize: true });
+
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ─────────────────────────────────────────────
+   0 · the ampersand
+   EB Garamond Italic's own outline (SIL OFL), in font units: 1000 per em,
+   origin on the baseline at the pen position, y down. As a path it stays
+   sharp at any zoom — text glyphs get clipped and dropped past ~20×.
+   ───────────────────────────────────────────── */
+const AMP = {
+  d: "M413 15Q318 15 245-18.5Q172-52 131-111.5Q90-171 90-249Q90-322 117-379Q134-416 160-443Q147-484 147-534Q147-586 174-628Q201-670 245-694.5Q289-719 340-718Q384-717 410-695.5Q436-674 436-636Q436-616 424-603.5Q412-591 392-591Q381-591 370.5-601Q360-611 360-621Q360-638 349.5-648Q339-658 322-658Q289-658 261-641Q233-624 216-594Q199-564 199-525Q199-498 202-476Q242-500 290-499Q340-498 369.5-475.5Q399-453 399-416Q399-391 386-371Q373-351 350.5-339.5Q328-328 299-328Q254-328 220-354Q194-374 177-405Q146-358 146-289Q146-231 173-180.5Q200-130 263.5-99Q327-68 436-68Q531-68 594-104Q657-140 688-198.5Q719-257 719-322Q719-382 692-420Q665-458 595-458Q561-458 542.5-439Q524-420 524-391Q524-372 533-357.5Q542-343 563-343Q574-343 579-348.5Q584-354 588-361Q593-369 599-377Q605-385 619-385Q642-385 652.5-373Q663-361 662-343Q661-321 644-303Q627-285 601-285Q549-285 517.5-314Q486-343 486-391Q486-428 507-458.5Q528-489 563-507.5Q598-526 641-526L728-527Q799-528 834-553.5Q869-579 869-630Q869-656 854.5-672.5Q840-689 817-689Q809-689 803.5-683.5Q798-678 798-671Q798-664 801.5-658Q805-652 813-650Q821-648 824.5-641Q828-634 828-627Q828-613 816-603Q804-593 787-593Q763-593 748-608Q733-623 733-647Q733-667 744.5-682.5Q756-698 776.5-707Q797-716 822-716Q862-716 886-686.5Q910-657 910-607Q910-562 888-528.5Q866-495 826.5-477Q787-459 732-459Q724-459 721-455.5Q718-452 722-446Q742-412 749.5-379Q757-346 757-300Q757-208 713-136.5Q669-65 591.5-25Q514 15 413 15ZM209-440Q231-368 297-368Q324-368 340-382Q356-396 356-419Q356-439 337-451.5Q318-464 287-464Q241-464 209-440Z",
+  G: [500, -352],   // centre of the ink
+  F: [685, -482],   // thickest point of the stroke — the zoom aims here
+  R: 46,            // stroke half-width at F
+  H: 733, W: 820
+};
+$("#ampFill").setAttribute("d", AMP.d);
+$("#ampLine").setAttribute("d", AMP.d);
+
+let seed = 20260930;
+const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+const circle = (host, cx, cy, r, attrs = {}) => {
+  const c = document.createElementNS(NS, "circle");
+  c.setAttribute("cx", cx.toFixed(1)); c.setAttribute("cy", cy.toFixed(1)); c.setAttribute("r", r.toFixed(2));
+  for (const k in attrs) c.setAttribute(k, attrs[k]);
+  host.appendChild(c);
+  return c;
+};
+
+/* ─────────────────────────────────────────────
+   1 · generated bits
+   ───────────────────────────────────────────── */
+// dust — kept off the wordmark
+for (let i = 0; i < 40; i++) {
+  const x = 40 + rnd() * 1120, y = 40 + rnd() * 720;
+  if (x > 290 && x < 910 && y > 240 && y < 570) continue;
+  circle($("#dustG"), x, y, 0.6 + rnd() * 1.6, { fill: rnd() < 0.16 ? GREEN : "#16170F", opacity: (0.2 + rnd() * 0.45).toFixed(2) });
+}
+// painted band on the vessel
+for (let x = 24; x <= 136; x += 7) circle($("#vesselDots"), x, 110, 1.6);
+
+// stipple — every dot is born knowing where in the vessel it belongs
+const stipple = [];
+{
+  const ctx = document.createElement("canvas").getContext("2d");
+  const shape = new Path2D($("#vesselP").getAttribute("d"));
+  let guard = 0;
+  while (stipple.length < 150 && guard++ < 6000) {
+    const tx = 24 + rnd() * 112, ty = 14 + rnd() * 192;
+    if (!ctx.isPointInPath(shape, tx, ty)) continue;
+    const a = rnd() * TAU, rad = 10 + Math.pow(rnd(), 0.7) * 62;
+    const sx = 80 + Math.cos(a) * rad * 0.95, sy = 110 + Math.sin(a) * rad * 1.35;
+    const el = circle($("#stipple"), tx, ty, 1.1 + rnd() * 1.1);
+    stipple.push({ el, dx: sx - tx, dy: sy - ty, t: rnd() });
+  }
+}
+
+/* ─────────────────────────────────────────────
+   2 · resting state
+   ───────────────────────────────────────────── */
+const words  = $$(".noun__w");
+const sheets = $$("#sheets .sheet");
+words.forEach(w => gsap.set(w, { rotation: +w.dataset.tilt }));
+stipple.forEach(s => gsap.set(s.el, { x: s.dx, y: s.dy }));
+gsap.set("#vessel", { opacity: 0, scale: 0.97, transformOrigin: "50% 100%" });
+gsap.set("#stamp", { x: 34, y: 0, rotation: -12, transformOrigin: "50% 100%" });
+sheets.forEach(s => gsap.set(s, { rotation: +s.dataset.rest, svgOrigin: "120 206" }));
+
+// III · the mobile is one number, t, turned into three pendulums and three spins
+const armA = $("#armA"), armB = $("#armB"), discA = $("#discA"), moon = $("#moon"), pip = $("#pip");
+const spin = (el, cx, sx) => el.setAttribute("transform", `translate(${cx} 0) scale(${sx.toFixed(3)} 1) translate(${-cx} 0)`);
+function hang(t) {
+  const env = ss(0, 0.18, t) * (1 - 0.6 * ss(0.75, 1, t));
+  armA.setAttribute("transform", `rotate(${(-3 + 9 * env * Math.sin(TAU * 2.3 * t)).toFixed(2)} 130 18)`);
+  armB.setAttribute("transform", `rotate(${(5 + 15 * env * Math.sin(TAU * 3.6 * t + 1.1)).toFixed(2)} 214 52)`);
+  spin(discA, 22,  1 + env * (Math.cos(TAU * 1.6 * t) - 1));
+  spin(moon,  160, 1 + env * (Math.cos(TAU * 2.1 * t + 0.6) - 1));
+  spin(pip,   252, 1 + env * (Math.cos(TAU * 2.8 * t + 2) - 1));
+}
+hang(0);
+
+/* ─────────────────────────────────────────────
+   3 · geometry — the & path is placed exactly over the typeset one
+   ───────────────────────────────────────────── */
+const layer = $("#ampLayer"), ampG = $("#ampG"), probe = $("#probe"), slot = $("#ampSlot");
+const fig1 = $("#fig1"), handRot = $("#handRot");
+const M = { k: 0.15, pen: [0, 0], rest: [0, 0], S2: 3, lzMax: 5, W: 1, H: 1, wide: true };
+// the camera: glyph point (ax,ay) lands on screen point (cx,cy) at scale e^lz
+const A = { cx: 0, cy: 0, ax: AMP.G[0], ay: AMP.G[1], lz: 0, rot: 0, jx: 0 };
+
+function applyAmp() {
+  ampG.setAttribute("transform",
+    `translate(${(A.cx + A.jx).toFixed(2)} ${A.cy.toFixed(2)}) rotate(${A.rot.toFixed(3)}) ` +
+    `scale(${(Math.exp(A.lz) * M.k).toFixed(6)}) translate(${(-A.ax).toFixed(3)} ${(-A.ay).toFixed(3)})`);
+}
+
+function placeHand() {
+  const w = fig1.offsetWidth, sc = w / 250, tipx = 246 * sc, tipy = 44 * sc;
+  const theta = M.wide ? 0 : -38, rad = theta * Math.PI / 180, gap = M.wide ? 12 : 8;
+  const [px, py] = M.pen, k = M.k;
+  // wide: finger at the lower bowl's left flank. narrow: up from below-left.
+  const T = M.wide ? [px + 104 * k, py - 250 * k] : [px + 150 * k, py - 96 * k];
+  fig1.style.left = (T[0] - tipx - gap * Math.cos(rad)).toFixed(1) + "px";
+  fig1.style.top  = (T[1] - tipy - gap * Math.sin(rad)).toFixed(1) + "px";
+  handRot.style.setProperty("--tipx", tipx + "px");
+  handRot.style.setProperty("--tipy", tipy + "px");
+  handRot.style.transform = `rotate(${theta}deg)`;
+}
+
+function measure() {
+  const L = layer.getBoundingClientRect(), p = probe.getBoundingClientRect();
+  M.W = L.width; M.H = L.height; M.wide = M.W >= 900;
+  M.k = parseFloat(getComputedStyle(slot).fontSize) / 1000;
+  M.pen  = [p.left - L.left, p.top - L.top];
+  M.rest = [M.pen[0] + AMP.G[0] * M.k, M.pen[1] + AMP.G[1] * M.k];
+  M.S2 = Math.min(0.5 * M.H / (AMP.H * M.k), 0.62 * M.W / (AMP.W * M.k));
+  // deep enough that the stroke's own width covers the screen corner to corner
+  M.lzMax = Math.log(1.35 * Math.hypot(M.W, M.H) / 2 / (AMP.R * M.k));
+  $$("#ripples circle").forEach(c => { c.setAttribute("cx", M.rest[0].toFixed(1)); c.setAttribute("cy", M.rest[1].toFixed(1)); });
+  placeHand();
+}
+
+/* ─────────────────────────────────────────────
+   4 · load-in — the & first, the word slides out from behind it,
+       then each cut-out is pasted down
+   ───────────────────────────────────────────── */
+function intro() {
+  gsap.timeline({ delay: 0.1, defaults: { ease: "power3.out" } })
+    .fromTo("#ampIntro", { opacity: 0 }, { opacity: 1, duration: 0.9 })
+    .fromTo("#noun", { opacity: 0, x: -36 }, { opacity: 1, x: 0, duration: 1.1 }, "-=0.6")
+    .fromTo("#sub", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.8 }, "-=0.7")
+    .fromTo(".stage .piece",
+      { opacity: 0, scale: 1.06, rotation: () => (rnd() - 0.5) * 7 },
+      { opacity: 1, scale: 1, rotation: 0, duration: 0.9, ease: "back.out(1.6)",
+        stagger: { each: 0.12, from: "random" } }, "-=0.9")
+    .fromTo("#cue", { opacity: 0 }, { opacity: 1, duration: 0.6 }, "-=0.3");
+  gsap.to("#bead", { y: 21, duration: 1.4, ease: "power2.inOut", repeat: -1, yoyo: true });
+}
+
+/* ─────────────────────────────────────────────
+   5 · the sequence — positions are absolute, 0–100
+   ───────────────────────────────────────────── */
+function sequence() {
+  const tl = gsap.timeline({
+    defaults: { immediateRender: false },
+    onUpdate: applyAmp,
+    scrollTrigger: {
+      trigger: "#seq", start: "top top", end: "bottom bottom",
+      pin: "#pin", scrub: 0.8, anticipatePin: 1, invalidateOnRefresh: true,
+      onRefreshInit: measure,
+      onRefresh: () => { if (tl.time() < 33) { A.cx = M.rest[0]; A.cy = M.rest[1]; } applyAmp(); }
+    }
+  });
+
+  /* the page steps back */
+  tl.to("#cue", { opacity: 0, duration: 4.5, ease: "none" }, 0.5)
+    .to("#sub", { opacity: 0, y: -10, duration: 6, ease: "power2.in" }, 2)
+    .to("#dustG", { y: -46, duration: 100, ease: "none" }, 0)
+    // the cloud leaves its sky
+    .to("#cloud", { x: 78, y: -34, rotation: 5, duration: 66, ease: "sine.inOut" }, 6);
+
+  /* the noun never settles: things → objects → spaces → people → futures → stuff */
+  words.forEach((w, i) => {
+    if (i === words.length - 1) return;
+    const at = 5 + i * 4.4, next = words[i + 1], tilt = +next.dataset.tilt;
+    tl.to(w, { yPercent: -55, rotation: +w.dataset.tilt - 8, opacity: 0, duration: 1.8, ease: "power2.in" }, at)
+      .fromTo(next, { yPercent: 65, rotation: tilt + 7, opacity: 0 },
+                    { yPercent: 0, rotation: tilt, opacity: 1, duration: 2.6, ease: "back.out(2.2)" }, at + 1.4);
+  });
+
+  /* I · provocation — wind up, jab, the & reels, the word is knocked clean off */
+  const hit = 29.2;
+  tl.fromTo("#hand", { x: 0 },   { x: -16, duration: 3.6, ease: "power2.out" }, 25.6)
+    .fromTo("#hand", { x: -16 }, { x: () => M.wide ? 50 : 34, duration: 1.6, ease: "power3.in" }, hit - 1.6)
+    .fromTo("#hand", { x: () => M.wide ? 50 : 34 }, { x: 0, duration: 7.4, ease: "back.out(1.4)" }, hit + 0.4)
+    .fromTo(A, { jx: 0, rot: 0 }, { jx: () => 100 * M.k, rot: 5, duration: 0.8, ease: "power2.out" }, hit)
+    .fromTo(A, { jx: () => 100 * M.k, rot: 5 }, { jx: 0, rot: 0, duration: 7, ease: "elastic.out(1, 0.32)" }, hit + 0.8)
+    .fromTo(words[words.length - 1], { xPercent: 0 },
+            { xPercent: 150, yPercent: 60, rotation: 44, opacity: 0, duration: 7, ease: "power2.out" }, hit);
+  $$("#ripples circle").forEach((c, i) => {
+    tl.fromTo(c, { attr: { r: () => AMP.H * M.k * 0.45 }, opacity: 0.55 },
+                 { attr: { r: () => AMP.H * M.k * (1.45 + i * 0.4) }, opacity: 0, duration: 9 + i * 2, ease: "power2.out" },
+              hit + i * 1.1);
+  });
+
+  /* & · the provoked glyph floods from the baseline up, and steps forward */
+  tl.fromTo("#floodRect", { attr: { y: 20 } }, { attr: { y: -745 }, duration: 16, ease: "power1.inOut" }, 31)
+    .fromTo(A, { cx: () => M.rest[0], cy: () => M.rest[1], lz: 0 },
+               { cx: () => M.W / 2, cy: () => M.H / 2, lz: () => Math.log(M.S2), duration: 26, ease: "power2.inOut" }, 33);
+
+  /* II · materializing — scattered marks find their place, then it's clay */
+  stipple.forEach(s => {
+    tl.fromTo(s.el, { x: s.dx, y: s.dy }, { x: 0, y: 0, duration: 12 + s.t * 8, ease: "expo.out" }, 14 + s.t * 20);
+  });
+  tl.to("#vesselGhost", { opacity: 0, duration: 6, ease: "none" }, 42)
+    .fromTo("#vessel", { opacity: 0, scale: 0.97 }, { opacity: 1, scale: 1, duration: 8, ease: "back.out(1.8)" }, 44)
+    .to("#stipple", { opacity: 0, duration: 6, ease: "power1.in" }, 49);
+
+  /* III · playing — a long, uneven swing that settles */
+  const swing = { t: 0 };
+  tl.fromTo(swing, { t: 0 }, { t: 1, duration: 74, ease: "none", onUpdate: () => hang(swing.t) }, 6);
+
+  /* IV · publishing — lift, slam, lift off, and somehow there are copies */
+  tl.fromTo("#stamp", { x: 34, y: 0, rotation: -12 }, { x: 8, y: -14, rotation: -3, duration: 4.6, ease: "power2.out" }, 40)
+    .fromTo("#stamp", { x: 8, y: -14, rotation: -3 }, { x: 0, y: 66, rotation: 0, duration: 1.6, ease: "power4.in" }, 44.6)
+    .fromTo("#stamp", { scaleY: 1 }, { scaleY: 0.9, duration: 0.6, ease: "power2.out" }, 46.2)
+    .fromTo("#stamp", { scaleY: 0.9 }, { scaleY: 1, duration: 1, ease: "power2.out" }, 46.8)
+    .fromTo("#seal", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "none" }, 46.2)
+    .fromTo("#sheets", { y: 0 }, { y: 3, duration: 0.5, ease: "power2.out" }, 46.2)
+    .fromTo("#sheets", { y: 3 }, { y: 0, duration: 3, ease: "elastic.out(1, 0.4)" }, 46.7)
+    .fromTo("#stamp", { x: 0, y: 66, rotation: 0 }, { x: 70, y: 4, rotation: 16, duration: 6.2, ease: "power3.out" }, 47.8);
+  sheets.forEach((s, i) => {
+    if (s.id === "sheetTop") return;
+    tl.fromTo(s, { rotation: +s.dataset.rest }, { rotation: +s.dataset.fan, duration: 7, ease: "back.out(1.5)", svgOrigin: "120 206" }, 52 + i);
+  });
+
+  /* tombstones light up as their figure works */
+  [["#fig1", hit - 1.6], ["#fig2", 14], ["#fig3", 7], ["#fig4", 40]].forEach(([f, at]) =>
+    tl.fromTo(`${f} .tomb__n`, { color: "rgba(22,23,15,.62)" }, { color: GREEN, duration: 3, ease: "none" }, at));
+
+  /* the inversion — the camera slides to the stroke's thickest point and
+     keeps going until the & is the page */
+  tl.fromTo(A, { ax: AMP.G[0], ay: AMP.G[1] }, { ax: AMP.F[0], ay: AMP.F[1], duration: 22, ease: "power2.inOut" }, 62)
+    .fromTo(A, { lz: () => Math.log(M.S2) }, { lz: () => M.lzMax, duration: 30, ease: "power3.in" }, 62)
+    .fromTo("#stage", { scale: 1 }, { scale: 1.1, duration: 30, ease: "power2.in", transformOrigin: "50% 50%" }, 62)
+    .fromTo("#flood", { opacity: 0 }, { opacity: 1, duration: 3, ease: "none" }, 90)
+    .set(".chrome", { mixBlendMode: "normal" }, 88)
+    .fromTo(".chrome", { color: "#16170F", "--hair-soft": "rgba(22,23,15,.3)" },
+                       { color: CARD, "--hair-soft": "rgba(251,249,243,.45)", duration: 4, ease: "none" }, 88)
+    .fromTo("#close", { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 9, ease: "power2.out" }, 91);
+
+  return tl;
+}
+
+/* ── reduced motion: the same story, told still ── */
+function still() {
+  gsap.set("#seq", { height: "100vh" });
+  gsap.set(["#cue", "#close", "#flood"], { display: "none" });
+  gsap.set([".stage .piece", "#noun", "#sub", "#ampIntro"], { opacity: 1 });
+  gsap.set("#floodRect", { attr: { y: -745 } });
+  gsap.set(["#stipple", "#vesselGhost"], { opacity: 0 });
+  gsap.set("#vessel", { opacity: 1, scale: 1 });
+  gsap.set("#stamp", { x: 70, y: 4, rotation: 16 });
+  gsap.set("#seal", { opacity: 1 });
+  sheets.forEach(s => gsap.set(s, { rotation: +s.dataset.fan, svgOrigin: "120 206" }));
+  gsap.set(".tomb__n", { color: GREEN });
+}
+
+/* ─────────────────────────────────────────────
+   6 · boot — after the fonts, because the & is placed by the type
+   ───────────────────────────────────────────── */
+let booted = false;
+function boot() {
+  if (booted) return; booted = true;
+  measure();
+  A.cx = M.rest[0]; A.cy = M.rest[1]; applyAmp();
+  root.classList.add("js-ready");
+  if (reduced) { still(); return; }
+  intro();
+  sequence();
+}
+(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(boot);
+setTimeout(boot, 2500);
+window.addEventListener("load", () => ScrollTrigger.refresh());
+})();
+</script>
+</body>
+</html>
